@@ -14,6 +14,18 @@ class onms_client:
         self.onms_url = "http://{0}:{1}/opennms/rest".format(self.hostname,self.port)
 
     #def get_node_list(self):
+    def get_vm_name(self):
+        request_url = "{0}/nodes/519".format(self.onms_url)
+
+        api_call = requests.get(request_url,
+                                headers=self.req_header,
+                                auth=self.req_auth)
+
+        data = json.loads(api_call.text)
+
+        vm_name= data['label']
+
+        return vm_name
 
     def get_vm_status(self):
         request_url = "{0}/nodes/519/ipinterfaces/10.113.108.19/services".format(self.onms_url)
@@ -29,6 +41,18 @@ class onms_client:
 
         return services
 
+    def get_vm_http_latency(self):
+        request_url = "{0}/measurements/node[vmware-ixc-vcenter.cisco.com:vm-1031].responseTime[10.113.108.19]/http?start=-60000".format(self.onms_url)
+        api_call = requests.get(request_url, headers=self.req_header,auth=self.req_auth)
+        data = json.loads(api_call.text)
+        #last value
+        for temp in reversed(data['columns'][0]['values']):
+            if temp != 'NaN':
+                http_response_latency = temp
+                return http_response_latency
+
+        return "no value"
+
 
     def get_wan_latency(self):
         request_url = "{0}/measurements/node[London IXC - Network Devices:1560421929244].responseTime[10.51.47.254]/icmp?start=-600000".format(self.onms_url)
@@ -42,17 +66,9 @@ class onms_client:
 
         return "no value"
 
-    def get_vm_http_stats(self):
-        request_url = "{0}/measurements/node[vmware-ixc-vcenter.cisco.com:vm-1031].responseTime[10.113.108.19]/http?start=-60000".format(self.onms_url)
-        api_call = requests.get(request_url, headers=self.req_header,auth=self.req_auth)
-        data = json.loads(api_call.text)
-        #last value
-        for temp in reversed(data['columns'][0]['values']):
-            if temp != 'NaN':
-                http_response_latency = temp
-                return http_response_latency
 
-        return "no value"
+
+
 """
 http://nms.cisco.com:8980/opennms/rest/measurements/node%5Bvmware-ixc-vcenter.cisco.com:vm-1031%5D.responseTime%5B10.113.108.19%5D/http
 
@@ -61,6 +77,7 @@ http://nms.cisco.com:8980/opennms/rest/measurements/node%5Bvmware-ixc-vcenter.ci
 
 http_latency = r'http://nms.cisco.com:8980/opennms/rest/measurements/node[vmware-ixc-vcenter.cisco.com:vm-1031].responseTime[10.113.108.19]/http?start=-60000'
 wan_latency = r'http://nms.cisco.com:8980/opennms/rest/measurements/node[London IXC - Network Devices:1560421929244].responseTime[10.51.47.254]/icmp?start=-600000'
+vm_status = r'http://nms.cisco.com:8980/opennms/rest/nodes/519/ipinterfaces/10.113.108.19/services'
 vm_status = r'http://nms.cisco.com:8980/opennms/rest/nodes/519/ipinterfaces/10.113.108.19/services'
 req_header = {'accept':'application/json'}
 req_auth = HTTPBasicAuth("onms_api","onms_api_123")
