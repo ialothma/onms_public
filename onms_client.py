@@ -14,11 +14,13 @@ class onms_client:
         self.onms_url = "http://{0}:{1}/opennms/rest".format(self.hostname,
                                                              self.port)
         self.vCenter = "vmware-ixc-vcenter.cisco.com"
+        self.vm_list = []
         self.vm_watch_list = [
                                 {
                                 "req": "vmware-ixc-vcenter.cisco.com",
                                 "fid": "vm-1031",
                                 "nlabel": "EMEAR-SE.cisco.com",
+                                "ip": "10.113.108.19"
                                 },
                                 ]
 
@@ -27,12 +29,13 @@ class onms_client:
                                 "req": "London IXC - Network Devices",
                                 "fid": "1560421929244",
                                 "nlabel": "BDLK WAN",
+                                "ip" : "10.51.47.254"
                                 },
                                 ]
 
     #def get_node_list(self):
     def get_vm_list(self, id=0):
-        request_url = "{0}/requisitions/{1}/nodes".format(self.onms_url,
+        request_url = "{0}/requisitions/{1}".format(self.onms_url,
                                                           self.vm_watch_list[id]['req'])
 
         api_call = requests.get(request_url,
@@ -40,11 +43,19 @@ class onms_client:
                                 auth=self.req_auth)
 
         data = json.loads(api_call.text)
-        vm_list = []
+        self.vm_list = []
+        req = data['foreign-source']
         for temp in data['node']:
-            vm_list.append(temp['node-label'])
+            self.vm_list.append(
+            {
+            "req": req,
+            "fid": temp['foreign-id'],
+            "nlabel": temp['node-label'],
+            "ip": [x['ip-addr'] for x in temp['interface'] if x['ip-addr'] and x['ip-addr'].startswith('10')]
+            }
+            )
 
-        return vm_list
+        return self.vm_list
 
     def get_vm_name(self, id=0):
         request_url = "{0}/nodes/{1}:{2}".format(self.onms_url,
@@ -63,10 +74,10 @@ class onms_client:
 
     def get_vm_status(self, id=0):
 
-        request_url = "{0}/nodes/{1}:{2}/ipinterfaces/10.113.108.19\
-                       /services".format(self.onms_url,
+        request_url = "{0}/nodes/{1}:{2}/ipinterfaces/{3}/services".format(self.onms_url,
                                          self.vm_watch_list[id]['req'],
-                                         self.vm_watch_list[id]['fid'])
+                                         self.vm_watch_list[id]['fid'],
+                                         self.vm_watch_list[id]['ip'])
 
         api_call = requests.get(request_url,
                                 headers=self.req_header,
@@ -85,11 +96,11 @@ class onms_client:
 
         return services
 
-    def get_latency(self, id, ip, service, start_time, watch_list):
+    def get_latency(self, id, service, start_time, watch_list):
         request_url = "{0}/measurements/node[{1}:{2}].responseTime[{3}]/{4}?start=-{5}".format(self.onms_url,
                                             watch_list[id]['req'],
                                             watch_list[id]['fid'],
-                                            ip,
+                                            watch_list[id]['ip'],
                                             service,
                                             start_time)
 
@@ -107,17 +118,22 @@ class onms_client:
         return "no value"
 
 
-    def get_vm_http_latency(self, id=0, ip='10.113.108.19', start_time='600000'):
-
-        http_latency = self.get_latency(id, ip, 'http', start_time, self.vm_watch_list)
-
+    def get_vm_http_latency(self, id=0, start_time='600000'):
+        service = 'http'
+        http_latency = self.get_latency(id, service, start_time, self.vm_watch_list)
+        if http_latency != 'no value':
+            http_latency = "{:.1f} ms".format(http_latency)
         return http_latency
 
-    def get_wan_latency(self, id=0, ip='10.51.47.254', start_time='600000'):
-
-        wan_latency = self.get_latency(id, ip, 'icmp', start_time, self.wan_watch_list)
-
+    def get_wan_latency(self, id=0, start_time='600000'):
+        service= 'icmp'
+        wan_latency = self.get_latency(id, service, start_time, self.wan_watch_list)
+        if wan_latency != 'no value':
+            wan_latency = wan_latency/1000#convert to milisecond
+            wan_latency = "{:.1f} ms".format(wan_latency)
         return wan_latency
+
+    #def add_vm_to_watchlist(self):
 
 
 #method for debugging
@@ -126,8 +142,10 @@ def test():
     print("Checking methods")
     m1 = 'get_vm_list'
     print("Method: {0}".format(m1))
+    #
+    [print(x) for x in c.get_vm_list()]
     try:
-        print(c.get_vm_list())
+        [print(x) for x in c.get_vm_list()]
     except:
         print("Method: {0} has an error".format(m1))
     else:
