@@ -1,6 +1,7 @@
 import requests
 from requests.auth import HTTPBasicAuth
 import json
+import mechanicalsoup
 
 class onms_client:
 
@@ -110,6 +111,25 @@ class onms_client:
             wan_latency = wan_latency/1000#convert to milisecond
             wan_latency = "{:.1f} ms".format(wan_latency)
         return wan_latency
+
+    def onms_graph_return(self): #returns png of HTTP/WAN Graphs
+    	browser = mechanicalsoup.Browser()
+    	login_page = browser.get("http://nms.cisco.com:8980/opennms/j_spring_security_check")
+
+    	login_form = login_page.soup.find("form")
+    	login_form.find("input", {"name": "j_username"})["value"] = "scraper"
+    	login_form.find("input", {"name": "j_password"})["value"] = "ScraperInTheHouse555"
+    	browser.submit(login_form, login_page.url)
+
+    	resp = browser.session.get("http://nms.cisco.com:8980/opennms/graph/graph.png?resourceId=node%5BLondon+IXC+-+Network+Devices%3A1560421929244%5D.responseTime%5B10.51.47.254%5D&start=-3600000&end=0&report=icmp")
+    	resp2 = browser.session.get("http://nms.cisco.com:8980/opennms/graph/graph.png?resourceId=node[vmware-ixc-vcenter.cisco.com:vm-1031].responseTime[10.113.108.19]&start=-3600000&end=0&report=http")
+    	resp.raise_for_status()
+    	resp2.raise_for_status()
+
+    	with open('icmp.png','wb') as outf:
+    		outf.write(resp.content)
+    	with open('http.png','wb') as outf:
+    		outf.write(resp2.content)
 
 
     def get_vm_list(self, id=0):# returns a dictionary of all the VMs in the requestion

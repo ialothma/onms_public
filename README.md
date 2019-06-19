@@ -29,6 +29,8 @@ client.get_vm_http_latency() #returns a string of the http latency OUTPUT
 client.get_wan_latency() #returns a string of the WAN latency to london
 >> "140.4 ms" this is microsecond please convert, if there was no value from the API call output will be "no value"
 
+client.onms_graph_return() #returns graphs of HTTP latency and WAN latency
+
 client.get_vm_list() #returns a list of all available VMs
 >>{'req': 'vmware-ixc-vcenter.cisco.com', 'fid': 'vm-1332', 'nlabel': 'CMX_Test_0.1', 'ip': []}
 {'req': 'vmware-ixc-vcenter.cisco.com', 'fid': 'vm-1429', 'nlabel': 'CMX.v10.6_01', 'ip': []}
