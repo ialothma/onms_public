@@ -6,14 +6,14 @@ class onms_client:
 
     def __init__(self):
         self.req_header = {'accept':'application/json'}
-        self.hostname = "nms.cisco.com"
-        self.port = "8980"
-        self.username = "onms_api"
-        self.password = "onms_api_123"
-        self.req_auth = HTTPBasicAuth("onms_api","onms_api_123")
+        self.hostname = "nms.cisco.com" #URL
+        self.port = "8980" #PORT
+        self.username = "onms_api" #USER
+        self.password = "onms_api_123" #PASS
+        self.req_auth = HTTPBasicAuth(self.username,self.password)
         self.onms_url = "http://{0}:{1}/opennms/rest".format(self.hostname,
                                                              self.port)
-        self.vCenter = "vmware-ixc-vcenter.cisco.com"
+        self.vCenter = "vmware-ixc-vcenter.cisco.com" #monitored vCenters
         self.vm_list = []
         self.vm_watch_list = [
                                 {
@@ -34,30 +34,8 @@ class onms_client:
                                 ]
 
     #def get_node_list(self):
-    def get_vm_list(self, id=0):
-        request_url = "{0}/requisitions/{1}".format(self.onms_url,
-                                                          self.vm_watch_list[id]['req'])
 
-        api_call = requests.get(request_url,
-                                headers=self.req_header,
-                                auth=self.req_auth)
-
-        data = json.loads(api_call.text)
-        self.vm_list = []
-        req = data['foreign-source']
-        for temp in data['node']:
-            self.vm_list.append(
-            {
-            "req": req,
-            "fid": temp['foreign-id'],
-            "nlabel": temp['node-label'],
-            "ip": [x['ip-addr'] for x in temp['interface'] if x['ip-addr'] and x['ip-addr'].startswith('10')]
-            }
-            )
-
-        return self.vm_list
-
-    def get_vm_name(self, id=0):
+    def get_vm_name(self, id=0):#get name of specified VM
         request_url = "{0}/nodes/{1}:{2}".format(self.onms_url,
                                                  self.vm_watch_list[id]['req'],
                                                  self.vm_watch_list[id]['fid'])
@@ -72,7 +50,7 @@ class onms_client:
         return vm_name
 
 
-    def get_vm_status(self, id=0):
+    def get_vm_status(self, id=0):#get status of specified VM
 
         request_url = "{0}/nodes/{1}:{2}/ipinterfaces/{3}/services".format(self.onms_url,
                                          self.vm_watch_list[id]['req'],
@@ -96,7 +74,7 @@ class onms_client:
 
         return services
 
-    def get_latency(self, id, service, start_time, watch_list):
+    def get_latency(self, id, service, start_time, watch_list):#gets response time metrics
         request_url = "{0}/measurements/node[{1}:{2}].responseTime[{3}]/{4}?start=-{5}".format(self.onms_url,
                                             watch_list[id]['req'],
                                             watch_list[id]['fid'],
@@ -118,14 +96,14 @@ class onms_client:
         return "no value"
 
 
-    def get_vm_http_latency(self, id=0, start_time='600000'):
+    def get_vm_http_latency(self, id=0, start_time='600000'): #gets HTTP response time metrics
         service = 'http'
         http_latency = self.get_latency(id, service, start_time, self.vm_watch_list)
         if http_latency != 'no value':
             http_latency = "{:.1f} ms".format(http_latency)
         return http_latency
 
-    def get_wan_latency(self, id=0, start_time='600000'):
+    def get_wan_latency(self, id=0, start_time='600000'): #gets WAN ICMP Response time metrics
         service= 'icmp'
         wan_latency = self.get_latency(id, service, start_time, self.wan_watch_list)
         if wan_latency != 'no value':
@@ -133,7 +111,52 @@ class onms_client:
             wan_latency = "{:.1f} ms".format(wan_latency)
         return wan_latency
 
-    #def add_vm_to_watchlist(self):
+
+    def get_vm_list(self, id=0):# returns a dictionary of all the VMs in the requestion
+        request_url = "{0}/requisitions/{1}".format(self.onms_url,
+                                                    self.vm_watch_list[id]['req'])
+
+        api_call = requests.get(request_url,
+                                headers=self.req_header,
+                                auth=self.req_auth)
+
+        data = json.loads(api_call.text)
+        self.vm_list = []
+        req = data['foreign-source']
+        for temp in data['node']:
+            self.vm_list.append(
+            {
+            "req": req,
+            "fid": temp['foreign-id'],
+            "nlabel": temp['node-label'],
+            "ip": [x['ip-addr'] for x in temp['interface'] if x['ip-addr'] and x['ip-addr'].startswith('10')]
+            }
+            )
+
+        return self.vm_list
+
+
+    def search_vm_list(self, keyword): #returns a list of VMs that contain the query string
+
+        result = []
+        for temp in self.vm_list:
+            if keyword.lower() in temp['nlabel'].lower():
+                result.append(temp['nlabel'])
+
+        if result == []:
+            result = ['no VM with that name was found']
+
+        return result
+
+    def add_vm_to_watchlist(self, keyword): #adds vm to watchlist with specified node label
+
+        for temp in self.vm_list:
+            if keyword.lower() == temp['nlabel'].lower() and temp not in self.vm_watch_list:
+                self.vm_watch_list.append(temp)
+
+        return self.vm_watch_list
+
+
 
 
 #method for debugging
@@ -169,7 +192,6 @@ def test():
     else:
         print("Method: {0} is successful".format(m3))
 
-    c.get_vm_http_latency()
 
     m4 = 'get_vm_http_latency'
     print("Method: {0}".format(m4))
@@ -188,6 +210,35 @@ def test():
         print("Method: {0} has an error".format(m5))
     else:
         print("Method: {0} is successful".format(m5))
+
+    m5 = 'search_vm_list'
+    print("Method: {0}".format(m5))
+    try:
+        temp = c.search_vm_list("bot")
+        print(temp)
+    except:
+        print("Method: {0} has an error".format(m5))
+    else:
+        print("Method: {0} is successful".format(m5))
+
+    m5 = 'add_vm_to_watchlist'
+    print("Method: {0}".format(m5))
+    try:
+        print(c.add_vm_to_watchlist(temp[0]))
+    except:
+        print("Method: {0} has an error".format(m5))
+    else:
+        print("Method: {0} is successful".format(m5))
+
+    m5 = 'add_vm_to_watchlist_2'
+    print("Method: {0}".format(m5))
+    try:
+        print(c.add_vm_to_watchlist(temp[0]))
+    except:
+        print("Method: {0} has an error".format(m5))
+    else:
+        print("Method: {0} is successful".format(m5))
+
 
 
 #test()
