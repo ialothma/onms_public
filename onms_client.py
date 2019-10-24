@@ -15,25 +15,25 @@ class onms_client:
         self.req_auth = HTTPBasicAuth(self.username,self.password)
         self.onms_url = "http://{0}:{1}/opennms/rest".format(self.hostname,
                                                              self.port)
-        self.vCenter = "vmware-ixc-vcenter.cisco.com" #monitored vCenters
+        self.vCenter = "VCENTER URL" #monitored vCenters
         self.vm_list = []
         self.vm_watch_list = [
                                 {
                                 "req": "vmware-ixc-vcenter.cisco.com",
                                 "fid": "vm-1031",
-                                "nlabel": "EMEAR-SE.cisco.com",
-                                "ip": "10.*.*.*"
+                                "nlabel": "HOSTNAME",
+                                "ip": "*.*.*.*"
                                 },
                                 {
                                 "req": "vmware-ixc-vcenter.cisco.com",
                                 "fid": "vm-1032",
-                                "nlabel": "sebot.cisco.com",
-                                "ip": "10.*.*.*"
+                                "nlabel": "HOSTNAME",
+                                "ip": "*.*.*.*"
                                 },{
                                 "req": "vmware-ixc-vcenter.cisco.com",
                                 "fid": "vm-1724",
-                                "nlabel": "se.cisco.com",
-                                "ip": "10.*.*.*"
+                                "nlabel": "HOSTNAME",
+                                "ip": "*.*.*.*"
                                 }
                                 ]
 
@@ -41,8 +41,8 @@ class onms_client:
                                 {
                                 "req": "London IXC - Network Devices",
                                 "fid": "1560421929244",
-                                "nlabel": "BDLK WAN",
-                                "ip" : "10.*.*.*"
+                                "nlabel": "HOSTNAME",
+                                "ip" : "*.*.*.*"
                                 },
                                 ]
 
@@ -133,7 +133,7 @@ class onms_client:
     	login_form.find("input", {"name": "j_password"})["value"] = "PASSWORD"
     	browser.submit(login_form, login_page.url)
 
-    	resp = browser.session.get("http://ONMS_URL:PORT/opennms/graph/graph.png?resourceId=node%5BLondon+IXC+-+Network+Devices%3A1560421929244%5D.responseTime%5B10.51.47.254%5D&start=-3600000&end=0&report=icmp")
+    	resp = browser.session.get("http://ONMS_URL:PORT/opennms/graph/graph.png?resourceId=node%5BLondon+IXC+-+Network+Devices%3A1560421929244%5D.responseTime%5B[REPLACE WITH IP]%5D&start=-3600000&end=0&report=icmp")
     	resp.raise_for_status()
 
     	with open('icmp.png','wb') as outf:
