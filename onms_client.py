@@ -8,10 +8,10 @@ class onms_client:
 
     def __init__(self):
         self.req_header = {'accept':'application/json'}
-        self.hostname = "nms.cisco.com" #URL
-        self.port = "8980" #PORT
-        self.username = "onms_api" #USER
-        self.password = "onms_api_123" #PASS
+        self.hostname = "" #URL
+        self.port = "" #PORT
+        self.username = "" #USER
+        self.password = "" #PASS
         self.req_auth = HTTPBasicAuth(self.username,self.password)
         self.onms_url = "http://{0}:{1}/opennms/rest".format(self.hostname,
                                                              self.port)
@@ -22,18 +22,18 @@ class onms_client:
                                 "req": "vmware-ixc-vcenter.cisco.com",
                                 "fid": "vm-1031",
                                 "nlabel": "EMEAR-SE.cisco.com",
-                                "ip": "10.113.108.19"
+                                "ip": ""
                                 },
                                 {
                                 "req": "vmware-ixc-vcenter.cisco.com",
                                 "fid": "vm-1032",
                                 "nlabel": "sebot.cisco.com",
-                                "ip": "10.113.108.20"
+                                "ip": ""
                                 },{
                                 "req": "vmware-ixc-vcenter.cisco.com",
                                 "fid": "vm-1724",
                                 "nlabel": "se.cisco.com",
-                                "ip": "10.113.108.42"
+                                "ip": ""
                                 }
                                 ]
 
@@ -42,7 +42,7 @@ class onms_client:
                                 "req": "London IXC - Network Devices",
                                 "fid": "1560421929244",
                                 "nlabel": "BDLK WAN",
-                                "ip" : "10.51.47.254"
+                                "ip" : ""
                                 },
                                 ]
 
