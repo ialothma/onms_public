@@ -13,8 +13,8 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 # Check if all environment variables are set
 
-BOT_ACCESS_TOKEN = 'MGIyZWJhNGUtMDhkNy00ZThlLWE4ZjMtZGM2MWU1ZTdhNTNjZjc5N2M5ZmEtOGM1_PF84_1eb65fdf-9643-417f-9974-ad72cae0e10f'
-BOT_ID = "Y2lzY29zcGFyazovL3VzL1BFT1BMRS84NjA1ZGZkMS04MmVmLTRiMDQtOGE1My05Y2MxZjQ0ZGY3OTk"
+BOT_ACCESS_TOKEN = ''
+BOT_ID = ""
 
 app = Flask(__name__)
 urllib3.disable_warnings()
@@ -84,7 +84,7 @@ def output(id, client, vmname):
             toprint = toprint + "{0:15}{1:30}\n".format('❌', key)
     toprint = toprint + "BDLK-Dubai ICMP Response Time is {}\n".format(latency)
     toprint = toprint + "HTTP response time for {} is {}\n".format(vmname, httplatency)
-    toprint = toprint + "For more  information click here http://nms.cisco.com:8980"
+    toprint = toprint + "For more  information click here http://ONMS_URL:PORT/"
     return toprint
 
 
@@ -156,4 +156,3 @@ if __name__ == "__main__":
     port = int(os.getenv('PORT', 5000))
     print("Starting app on port " + str(port))
     app.run(debug=False, port=port, host='127.0.0.1', threaded=True)
-

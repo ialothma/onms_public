@@ -8,10 +8,10 @@ class onms_client:
 
     def __init__(self):
         self.req_header = {'accept':'application/json'}
-        self.hostname = "nms.cisco.com" #URL
-        self.port = "8980" #PORT
-        self.username = "onms_api" #USER
-        self.password = "onms_api_123" #PASS
+        self.hostname = "" #URL
+        self.port = "" #PORT
+        self.username = "" #USER
+        self.password = "" #PASS
         self.req_auth = HTTPBasicAuth(self.username,self.password)
         self.onms_url = "http://{0}:{1}/opennms/rest".format(self.hostname,
                                                              self.port)
@@ -22,18 +22,18 @@ class onms_client:
                                 "req": "vmware-ixc-vcenter.cisco.com",
                                 "fid": "vm-1031",
                                 "nlabel": "EMEAR-SE.cisco.com",
-                                "ip": "10.113.108.19"
+                                "ip": "10.*.*.*"
                                 },
                                 {
                                 "req": "vmware-ixc-vcenter.cisco.com",
                                 "fid": "vm-1032",
                                 "nlabel": "sebot.cisco.com",
-                                "ip": "10.113.108.20"
+                                "ip": "10.*.*.*"
                                 },{
                                 "req": "vmware-ixc-vcenter.cisco.com",
                                 "fid": "vm-1724",
                                 "nlabel": "se.cisco.com",
-                                "ip": "10.113.108.42"
+                                "ip": "10.*.*.*"
                                 }
                                 ]
 
@@ -42,7 +42,7 @@ class onms_client:
                                 "req": "London IXC - Network Devices",
                                 "fid": "1560421929244",
                                 "nlabel": "BDLK WAN",
-                                "ip" : "10.51.47.254"
+                                "ip" : "10.*.*.*"
                                 },
                                 ]
 
@@ -126,14 +126,14 @@ class onms_client:
 
     def onms_graph_return_wan(self): #returns png of HTTP/WAN Graphs
     	browser = mechanicalsoup.Browser()
-    	login_page = browser.get("http://nms.cisco.com:8980/opennms/j_spring_security_check")
+    	login_page = browser.get("http://ONMS_URL:PORT/opennms/j_spring_security_check")
 
     	login_form = login_page.soup.find("form")
-    	login_form.find("input", {"name": "j_username"})["value"] = "scraper"
-    	login_form.find("input", {"name": "j_password"})["value"] = "ScraperInTheHouse555"
+    	login_form.find("input", {"name": "j_username"})["value"] = "USERNAME"
+    	login_form.find("input", {"name": "j_password"})["value"] = "PASSWORD"
     	browser.submit(login_form, login_page.url)
 
-    	resp = browser.session.get("http://nms.cisco.com:8980/opennms/graph/graph.png?resourceId=node%5BLondon+IXC+-+Network+Devices%3A1560421929244%5D.responseTime%5B10.51.47.254%5D&start=-3600000&end=0&report=icmp")
+    	resp = browser.session.get("http://ONMS_URL:PORT/opennms/graph/graph.png?resourceId=node%5BLondon+IXC+-+Network+Devices%3A1560421929244%5D.responseTime%5B10.51.47.254%5D&start=-3600000&end=0&report=icmp")
     	resp.raise_for_status()
 
     	with open('icmp.png','wb') as outf:
@@ -141,14 +141,14 @@ class onms_client:
 
     def onms_graph_return_http(self, id): #returns png of HTTP/WAN Graphs
     	browser = mechanicalsoup.Browser()
-    	login_page = browser.get("http://nms.cisco.com:8980/opennms/j_spring_security_check")
+    	login_page = browser.get("http://ONMS_URL:PORT//opennms/j_spring_security_check")
 
     	login_form = login_page.soup.find("form")
-    	login_form.find("input", {"name": "j_username"})["value"] = "scraper"
-    	login_form.find("input", {"name": "j_password"})["value"] = "ScraperInTheHouse555"
+    	login_form.find("input", {"name": "j_username"})["value"] = "USERNAME"
+    	login_form.find("input", {"name": "j_password"})["value"] = "PASSWORD"
     	browser.submit(login_form, login_page.url)
 
-    	resp = browser.session.get("http://nms.cisco.com:8980/opennms/graph/graph.png?resourceId=node[vmware-ixc-vcenter.cisco.com:{}].responseTime[{}]&start=-3600000&end=0&report=http".format(self.vm_watch_list[id]['fid'], self.vm_watch_list[id]['ip']))
+    	resp = browser.session.get("http://ONMS_URL:PORT//opennms/graph/graph.png?resourceId=node[vmware-ixc-vcenter.cisco.com:{}].responseTime[{}]&start=-3600000&end=0&report=http".format(self.vm_watch_list[id]['fid'], self.vm_watch_list[id]['ip']))
     	resp.raise_for_status()
 
     	with open('http.png','wb') as outf:
