@@ -2,6 +2,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import json
 import mechanicalsoup
+import pprint
 
 class onms_client:
 
@@ -23,6 +24,17 @@ class onms_client:
                                 "nlabel": "EMEAR-SE.cisco.com",
                                 "ip": "10.113.108.19"
                                 },
+                                {
+                                "req": "vmware-ixc-vcenter.cisco.com",
+                                "fid": "vm-1032",
+                                "nlabel": "sebot.cisco.com",
+                                "ip": "10.113.108.20"
+                                },{
+                                "req": "vmware-ixc-vcenter.cisco.com",
+                                "fid": "vm-1724",
+                                "nlabel": "se.cisco.com",
+                                "ip": "10.113.108.42"
+                                }
                                 ]
 
         self.wan_watch_list = [
@@ -36,7 +48,7 @@ class onms_client:
 
     #def get_node_list(self):
 
-    def get_vm_name(self, id=0):#get name of specified VM
+    def get_vm_name(self, id):#get name of specified VM
         request_url = "{0}/nodes/{1}:{2}".format(self.onms_url,
                                                  self.vm_watch_list[id]['req'],
                                                  self.vm_watch_list[id]['fid'])
@@ -51,7 +63,7 @@ class onms_client:
         return vm_name
 
 
-    def get_vm_status(self, id=0):#get status of specified VM
+    def get_vm_status(self, id):#get status of specified VM
 
         request_url = "{0}/nodes/{1}:{2}/ipinterfaces/{3}/services".format(self.onms_url,
                                          self.vm_watch_list[id]['req'],
@@ -97,7 +109,7 @@ class onms_client:
         return "no value"
 
 
-    def get_vm_http_latency(self, id=0, start_time='600000'): #gets HTTP response time metrics
+    def get_vm_http_latency(self, id, start_time='600000'): #gets HTTP response time metrics
         service = 'http'
         http_latency = self.get_latency(id, service, start_time, self.vm_watch_list)
         if http_latency != 'no value':
@@ -112,7 +124,7 @@ class onms_client:
             wan_latency = "{:.1f} ms".format(wan_latency)
         return wan_latency
 
-    def onms_graph_return(self): #returns png of HTTP/WAN Graphs
+    def onms_graph_return_wan(self): #returns png of HTTP/WAN Graphs
     	browser = mechanicalsoup.Browser()
     	login_page = browser.get("http://nms.cisco.com:8980/opennms/j_spring_security_check")
 
@@ -122,14 +134,25 @@ class onms_client:
     	browser.submit(login_form, login_page.url)
 
     	resp = browser.session.get("http://nms.cisco.com:8980/opennms/graph/graph.png?resourceId=node%5BLondon+IXC+-+Network+Devices%3A1560421929244%5D.responseTime%5B10.51.47.254%5D&start=-3600000&end=0&report=icmp")
-    	resp2 = browser.session.get("http://nms.cisco.com:8980/opennms/graph/graph.png?resourceId=node[vmware-ixc-vcenter.cisco.com:vm-1031].responseTime[10.113.108.19]&start=-3600000&end=0&report=http")
     	resp.raise_for_status()
-    	resp2.raise_for_status()
 
     	with open('icmp.png','wb') as outf:
     		outf.write(resp.content)
+
+    def onms_graph_return_http(self, id): #returns png of HTTP/WAN Graphs
+    	browser = mechanicalsoup.Browser()
+    	login_page = browser.get("http://nms.cisco.com:8980/opennms/j_spring_security_check")
+
+    	login_form = login_page.soup.find("form")
+    	login_form.find("input", {"name": "j_username"})["value"] = "scraper"
+    	login_form.find("input", {"name": "j_password"})["value"] = "ScraperInTheHouse555"
+    	browser.submit(login_form, login_page.url)
+
+    	resp = browser.session.get("http://nms.cisco.com:8980/opennms/graph/graph.png?resourceId=node[vmware-ixc-vcenter.cisco.com:{}].responseTime[{}]&start=-3600000&end=0&report=http".format(self.vm_watch_list[id]['fid'], self.vm_watch_list[id]['ip']))
+    	resp.raise_for_status()
+
     	with open('http.png','wb') as outf:
-    		outf.write(resp2.content)
+    		outf.write(resp.content)
 
 
     def get_vm_list(self, id=0):# returns a dictionary of all the VMs in the requestion
@@ -178,7 +201,7 @@ class onms_client:
 
 
 
-
+'''
 #method for debugging
 def test():
     c = onms_client()
@@ -259,7 +282,7 @@ def test():
     else:
         print("Method: {0} is successful".format(m5))
 
-
+'''
 
 #test()
 
