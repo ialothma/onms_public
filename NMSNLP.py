@@ -99,7 +99,7 @@ def sendingOutputAll(client, roomId):
     toprint = output(0, client, EMEAR) + "\n\n"
     toprint = toprint + output(1, client, SEBOT) + "\n\n"
     toprint = toprint + output(2, client, GlobalSE)
-    toprint = toprint + "\n\nAlso to check the status for more VMs visit http://nms.cisco.com:8980"
+    toprint = toprint + "\n\nAlso to check the status for more VMs visit http://ONMS_URL:PORT/"
     send_message(toprint, roomId)
 
     client.onms_graph_return_wan()
