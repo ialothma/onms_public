@@ -287,34 +287,3 @@ def test():
 #test()
 
 
-"""
-http://nms.cisco.com:8980/opennms/rest/measurements/node%5Bvmware-ixc-vcenter.cisco.com:vm-1031%5D.responseTime%5B10.113.108.19%5D/http
-
-http://nms.cisco.com:8980/opennms/rest/measurements/node%5Bvmware-ixc-vcenter.cisco.com:vm-1031%5D.responseTime%5B10.113.108.19%5D/http
-
-
-request_url = "{0}/measurements/node[{1}:{2}].responseTime[10.113.108.19]\
-                /http?start=-60000".format(self.onms_url,
-                                    self.vm_watch_list[id]['req'],
-                                    self.vm_watch_list[id]['fid'])
-
-      request_url = "{0}/measurements/node[{1}:{2}].responseTime[10.51.47.254]\
-                /icmp?start=-600000".format(self.onms_url,
-                                     self.wan_watch_list[id]['req'],
-                                     self.wan_watch_list[id]['fid'])
-
-http_latency = r'http://nms.cisco.com:8980/opennms/rest/measurements/node[vmware-ixc-vcenter.cisco.com:vm-1031].responseTime[10.113.108.19]/http?start=-60000'
-wan_latency = r'http://nms.cisco.com:8980/opennms/rest/measurements/node[London IXC - Network Devices:1560421929244].responseTime[10.51.47.254]/icmp?start=-600000'
-vm_status = r'http://nms.cisco.com:8980/opennms/rest/nodes/519/ipinterfaces/10.113.108.19/services'
-vm_status = r'http://nms.cisco.com:8980/opennms/rest/nodes/519/ipinterfaces/10.113.108.19/services'
-req_header = {'accept':'application/json'}
-req_auth = HTTPBasicAuth("onms_api","onms_api_123")
-response = requests.get(req_url,headers=req_header,auth=req_auth)
-
-def api_call(req_url):
-    req_header = {'accept':'application/json'}
-    req_auth = HTTPBasicAuth("onms_api","onms_api_123")
-    response = requests.get(req_url,headers=req_header,auth=req_auth)
-    data = json.loads(response.text)
-    return json.dumps(data, indent=4, sort_keys=True)
-"""
